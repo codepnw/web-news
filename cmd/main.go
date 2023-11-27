@@ -2,9 +2,12 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/alexedwards/scs/v2"
 	"github.com/codepnw/web-news/cmd/server"
 )
 
@@ -28,6 +31,13 @@ func main() {
 	} else {
 		app.View = jet.NewSet(jet.NewOSFileSystemLoader("./views"))
 	}
+
+	app.Session = scs.New()
+	app.Session.Lifetime = 24 * time.Hour
+	app.Session.Cookie.Persist = true
+	app.Session.Cookie.Name = app.AppName
+	app.Session.Cookie.Domain = app.Server.Host
+	app.Session.Cookie.SameSite = http.SameSiteStrictMode
 
 	if err := app.StartServer(); err != nil {
 		log.Fatal(err)

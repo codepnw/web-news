@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/alexedwards/scs/v2"
 )
 
 type Application struct {
@@ -16,6 +17,7 @@ type Application struct {
 	ErrLog  *log.Logger
 	InfoLog *log.Logger
 	View    *jet.Set
+	Session *scs.SessionManager
 }
 
 type Server struct {
