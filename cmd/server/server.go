@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/CloudyKit/jet/v6"
 )
 
 type Application struct {
@@ -13,6 +15,7 @@ type Application struct {
 	Debug   bool
 	ErrLog  *log.Logger
 	InfoLog *log.Logger
+	View    *jet.Set
 }
 
 type Server struct {

@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/CloudyKit/jet/v6"
 	"github.com/codepnw/web-news/cmd/server"
 )
 
@@ -20,6 +21,12 @@ func main() {
 		Debug:   true,
 		InfoLog: log.New(os.Stdout, "INFO\t", log.Ltime|log.Ldate|log.Lshortfile),
 		ErrLog:  log.New(os.Stdout, "ERROR\t", log.Ltime|log.Ldate|log.Llongfile),
+	}
+
+	if app.Debug {
+		app.View = jet.NewSet(jet.NewOSFileSystemLoader("./views"), jet.InDevelopmentMode())
+	} else {
+		app.View = jet.NewSet(jet.NewOSFileSystemLoader("./views"))
 	}
 
 	if err := app.StartServer(); err != nil {
