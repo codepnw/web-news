@@ -8,6 +8,7 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/alexedwards/scs/v2"
+	"github.com/codepnw/web-news/models"
 )
 
 type Application struct {
@@ -18,6 +19,7 @@ type Application struct {
 	InfoLog *log.Logger
 	View    *jet.Set
 	Session *scs.SessionManager
+	Model   models.Models
 }
 
 type Server struct {
