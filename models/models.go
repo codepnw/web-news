@@ -17,11 +17,13 @@ var (
 
 type Models struct {
 	Users *UsersModel
+	Posts *PostsModel
 }
 
 func New(db db.Session) Models {
 	return Models{
 		Users: &UsersModel{db: db},
+		Posts: &PostsModel{db: db},
 	}
 }
 
@@ -33,7 +35,8 @@ func convertUpperIDtoInt(id db.ID) int {
 	return id.(int)
 }
 
-func errHashDuplicate(err error, key string) bool {
+func errHasDuplicate(err error, key string) bool {
 	str := fmt.Sprintf(`ERROR: duplicate key value violates unique constraint "%s"`, key)
 	return strings.Contains(err.Error(), str)
 }
+

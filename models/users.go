@@ -23,14 +23,14 @@ type UsersModel struct {
 	db db.Session
 }
 
-func (u *UsersModel) Table() string {
+func (m *UsersModel) Table() string {
 	return "users table"
 }
 
-func (u *UsersModel) Get(id int) (*User, error) {
+func (m *UsersModel) Get(id int) (*User, error) {
 	var user User
 
-	err := u.db.Collection(u.Table()).Find(db.Cond{"id": id}).One(&user)
+	err := m.db.Collection(m.Table()).Find(db.Cond{"id": id}).One(&user)
 	if err != nil {
 		if errors.Is(err, db.ErrNoMoreRows) {
 			return nil, ErrNoMoreRows
@@ -41,10 +41,10 @@ func (u *UsersModel) Get(id int) (*User, error) {
 	return &user, nil
 }
 
-func (u *UsersModel) FindByEmail(email string) (*User, error) {
+func (m *UsersModel) FindByEmail(email string) (*User, error) {
 	var user User
 
-	err := u.db.Collection(u.Table()).Find(db.Cond{"email": email}).One(&user)
+	err := m.db.Collection(m.Table()).Find(db.Cond{"email": email}).One(&user)
 	if err != nil {
 		if errors.Is(err, db.ErrNoMoreRows) {
 			return nil, ErrNoMoreRows
@@ -55,7 +55,7 @@ func (u *UsersModel) FindByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
-func (u *UsersModel) Insert(user *User) error {
+func (m *UsersModel) Insert(user *User) error {
 	newHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), passwordCost)
 	if err != nil {
 		return err
@@ -64,12 +64,12 @@ func (u *UsersModel) Insert(user *User) error {
 	user.Password = string(newHash)
 	user.CreatedAt = time.Now()
 
-	col := u.db.Collection(u.Table())
+	col := m.db.Collection(m.Table())
 	res, err := col.Insert(user)
 
 	if err != nil {
 		switch {
-		case errHashDuplicate(err, "users_email_key"):
+		case errHasDuplicate(err, "users_email_key"):
 			return ErrDuplicateEmail
 		default:
 			return err
@@ -80,9 +80,8 @@ func (u *UsersModel) Insert(user *User) error {
 	return nil
 }
 
-func (user *User) ComparePassword(plainPassword string) (bool, error) {
-
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(plainPassword))
+func (u *User) ComparePassword(plainPassword string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(plainPassword))
 	if err != nil {
 		switch {
 		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
@@ -95,8 +94,8 @@ func (user *User) ComparePassword(plainPassword string) (bool, error) {
 	return true, nil
 }
 
-func (u *UsersModel) Authenticate(email, password string) (*User, error) {
-	user, err := u.FindByEmail(email)
+func (m *UsersModel) Authenticate(email, password string) (*User, error) {
+	user, err := m.FindByEmail(email)
 	if err != nil {
 		return nil, err
 	}
