@@ -19,6 +19,10 @@ func (a *Application) Routes() http.Handler {
 		router.Use(middleware.Logger)
 	}
 
+	router.Get("/", a.homeHandler)	
+	router.Get("/comments/{postId}", a.commentHandler)
+	router.Post("/comments/{postId}", a.commentPostHandler)
+
 	fileServer := http.FileServer(http.Dir("./public"))
 	router.Handle("/public/*", http.StripPrefix("/public", fileServer))
 

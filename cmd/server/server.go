@@ -19,7 +19,7 @@ type Application struct {
 	InfoLog *log.Logger
 	View    *jet.Set
 	Session *scs.SessionManager
-	Model   models.Models
+	Models   models.Models
 }
 
 type Server struct {

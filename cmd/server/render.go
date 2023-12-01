@@ -7,6 +7,11 @@ import (
 	"github.com/CloudyKit/jet/v6"
 )
 
+const (
+	sessionKeyUserId   = "userId"
+	sessionKeyUserName = "userName"
+)
+
 type TemplateData struct {
 	URL             string
 	IsAuthenticated bool
@@ -18,6 +23,16 @@ type TemplateData struct {
 
 func (a *Application) DefaultData(td *TemplateData, r *http.Request) *TemplateData {
 	td.URL = a.Server.Url
+
+	if a.Session != nil {
+		if a.Session.Exists(r.Context(), sessionKeyUserId) {
+			td.IsAuthenticated = true
+			td.AuthUser = a.Session.GetString(r.Context(), sessionKeyUserName)
+		}
+
+		td.Flash = a.Session.GetString(r.Context(), "flash")
+	}
+
 	return td
 }
 

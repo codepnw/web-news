@@ -67,7 +67,7 @@ func main() {
 		Debug:   true,
 		InfoLog: log.New(os.Stdout, "INFO\t", log.Ltime|log.Ldate|log.Lshortfile),
 		ErrLog:  log.New(os.Stdout, "ERROR\t", log.Ltime|log.Ldate|log.Llongfile),
-		Model:   models.New(upper),
+		Models:   models.New(upper),
 	}
 
 	if app.Debug {

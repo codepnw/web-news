@@ -16,14 +16,16 @@ var (
 )
 
 type Models struct {
-	Users *UsersModel
-	Posts *PostsModel
+	Users    *UsersModel
+	Posts    *PostsModel
+	Comments *CommentsModel
 }
 
 func New(db db.Session) Models {
 	return Models{
-		Users: &UsersModel{db: db},
-		Posts: &PostsModel{db: db},
+		Users:    &UsersModel{db: db},
+		Posts:    &PostsModel{db: db},
+		Comments: &CommentsModel{db: db},
 	}
 }
 
@@ -39,4 +41,3 @@ func errHasDuplicate(err error, key string) bool {
 	str := fmt.Sprintf(`ERROR: duplicate key value violates unique constraint "%s"`, key)
 	return strings.Contains(err.Error(), str)
 }
-
