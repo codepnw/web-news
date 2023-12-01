@@ -56,18 +56,18 @@ func main() {
 	}
 
 	srv := server.Server{
-		Host: "127.0.0.1",
-		Port: "8000",
-		Url:  "http://127.0.0.1:8000",
+		Host: os.Getenv("APP_HOST"),
+		Port: os.Getenv("APP_PORT"),
+		Url:  fmt.Sprintf("%s:%s", os.Getenv("APP_HOST"), os.Getenv("APP_PORT")),
 	}
 
 	app := &server.Application{
 		Server:  srv,
-		AppName: "WebNews",
+		AppName: os.Getenv("APP_NAME"),
 		Debug:   true,
 		InfoLog: log.New(os.Stdout, "INFO\t", log.Ltime|log.Ldate|log.Lshortfile),
 		ErrLog:  log.New(os.Stdout, "ERROR\t", log.Ltime|log.Ldate|log.Llongfile),
-		Models:   models.New(upper),
+		Models:  models.New(upper),
 	}
 
 	if app.Debug {
