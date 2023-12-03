@@ -19,9 +19,15 @@ func (a *Application) Routes() http.Handler {
 		router.Use(middleware.Logger)
 	}
 
-	router.Get("/", a.homeHandler)	
+	router.Get("/", a.homeHandler)
 	router.Get("/comments/{postId}", a.commentHandler)
 	router.Post("/comments/{postId}", a.commentPostHandler)
+
+	router.Get("/login", a.loginHandler)
+	router.Post("/login", a.loginPostHandler)
+	router.Get("/signup", a.signUpHandler)
+	router.Post("/signup", a.signUpPostHandler)
+	router.Get("/logout", a.logoutHandler)
 
 	fileServer := http.FileServer(http.Dir("./public"))
 	router.Handle("/public/*", http.StripPrefix("/public", fileServer))

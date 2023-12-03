@@ -24,7 +24,7 @@ type UsersModel struct {
 }
 
 func (m *UsersModel) Table() string {
-	return "users table"
+	return "users"
 }
 
 func (m *UsersModel) Get(id int) (*User, error) {

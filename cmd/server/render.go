@@ -30,7 +30,7 @@ func (a *Application) DefaultData(td *TemplateData, r *http.Request) *TemplateDa
 			td.AuthUser = a.Session.GetString(r.Context(), sessionKeyUserName)
 		}
 
-		td.Flash = a.Session.GetString(r.Context(), "flash")
+		td.Flash = a.Session.PopString(r.Context(), "flash")
 	}
 
 	return td

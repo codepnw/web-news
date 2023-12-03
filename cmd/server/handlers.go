@@ -118,3 +118,117 @@ func (a *Application) commentPostHandler(w http.ResponseWriter, r *http.Request)
 	a.Session.Put(r.Context(), "flash", "comment created")
 	http.Redirect(w, r, fmt.Sprintf("/comments/%d", postId), http.StatusSeeOther)
 }
+
+func (a *Application) loginHandler(w http.ResponseWriter, r *http.Request) {
+	err := a.Render(w, r, "login", nil)
+	if err != nil {
+		a.serverError(w, err)
+		return
+	}
+}
+
+func (a *Application) loginPostHandler(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 1024*2)
+
+	err := r.ParseForm()
+	if err != nil {
+		a.serverError(w, err)
+		return
+	}
+
+	form := utils.NewForm(r.PostForm)
+	form.Email("email")
+	form.MinLength("password", 3)
+
+	if !form.Valid() {
+		vars := make(jet.VarMap)
+		vars.Set("errors", form.Errors)
+
+		err := a.Render(w, r, "login", vars)
+		if err != nil {
+			a.serverError(w, err)
+			return
+		}
+	}
+
+	user, err := a.Models.Users.Authenticate(form.Get("email"), form.Get("password"))
+	if err != nil {
+		a.Session.Put(r.Context(), "flash", "login error: "+err.Error())
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	a.Session.RenewToken(r.Context())
+	a.Session.Put(r.Context(), sessionKeyUserId, user.ID)
+	a.Session.Put(r.Context(), sessionKeyUserName, user.Name)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+
+}
+
+func (a *Application) signUpHandler(w http.ResponseWriter, r *http.Request) {
+	vars := make(jet.VarMap)
+	vars.Set("form", utils.NewForm(r.PostForm))
+
+	err := a.Render(w, r, "signup", vars)
+	if err != nil {
+		a.serverError(w, err)
+		return
+	}
+}
+
+func (a *Application) signUpPostHandler(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 1024*2)
+
+	err := r.ParseForm()
+	if err != nil {
+		a.serverError(w, err)
+		return
+	}
+
+	vars := make(jet.VarMap)
+
+	form := utils.NewForm(r.PostForm)
+	vars.Set("form", form)
+
+	form.Required("name", "email", "password").
+		Email("email")
+
+	if !form.Valid() {
+		vars.Set("errors", form.Errors)
+		err := a.Render(w, r, "signup", vars)
+		if err != nil {
+			a.serverError(w, err)
+		}
+		return
+	}
+
+	user := models.User{
+		Name:      form.Get("name"),
+		Email:     form.Get("email"),
+		Password:  form.Get("password"),
+		Activated: true, 
+	}
+	err = a.Models.Users.Insert(&user)
+	if err != nil {
+		form.Fail("signup", "failed to create account: "+err.Error())
+		vars.Set("errors", form.Errors)
+		err := a.Render(w, r, "signup", vars)
+		if err != nil {
+			a.serverError(w, err)
+		}
+		return
+	}
+
+	a.Session.Put(r.Context(), "flash", "account created!")
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+func (a *Application) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	a.Session.Remove(r.Context(), sessionKeyUserId)
+	a.Session.Remove(r.Context(), sessionKeyUserName)
+	a.Session.Destroy(r.Context())
+	a.Session.RenewToken(r.Context())
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+	return
+}
