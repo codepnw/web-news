@@ -13,6 +13,7 @@ func (a *Application) Routes() http.Handler {
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Recoverer)
+	router.Use(a.CSRFTokenRequired)
 	router.Use(a.LoadSession)
 
 	if a.Debug {
@@ -27,7 +28,12 @@ func (a *Application) Routes() http.Handler {
 	router.Post("/login", a.loginPostHandler)
 	router.Get("/signup", a.signUpHandler)
 	router.Post("/signup", a.signUpPostHandler)
-	router.Get("/logout", a.logoutHandler)
+	router.Get("/logout", a.authRequired(a.logoutHandler))
+
+	router.Get("/vote", a.authRequired(a.voteHandler))
+	router.Get("/submit", a.authRequired(a.submitHandler))
+	router.Post("/submit", a.authRequired(a.submitPostHandler))
+
 
 	fileServer := http.FileServer(http.Dir("./public"))
 	router.Handle("/public/*", http.StripPrefix("/public", fileServer))

@@ -232,3 +232,77 @@ func (a *Application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return
 }
+
+func (a *Application) voteHandler(w http.ResponseWriter, r *http.Request) {
+	id := a.readIntDefault(r, "id", 0)
+
+	post, err := a.Models.Posts.Get(id)
+	if err != nil {
+		a.Session.Put(r.Context(), "flash", "Error: "+err.Error())
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	userId := a.Session.GetInt(r.Context(), sessionKeyUserId)
+	err = a.Models.Posts.Vote(post.ID, userId)
+	if err != nil {
+		a.Session.Put(r.Context(), "flash", "Error: "+err.Error())
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	a.Session.Put(r.Context(), "flash", "Voted successfully!")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (a *Application) submitHandler(w http.ResponseWriter, r *http.Request) {
+	vars := make(jet.VarMap)
+	vars.Set("form", utils.NewForm(r.PostForm))
+	err := a.Render(w, r, "submit", vars)
+	if err != nil {
+		a.serverError(w, err)
+		return
+	}
+}
+
+func (a *Application) submitPostHandler(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 1024*2)
+
+	err := r.ParseForm()
+	if err != nil {
+		a.serverError(w, err)
+		return
+	}
+
+	userId := a.Session.GetInt(r.Context(), sessionKeyUserId)
+	vars := make(jet.VarMap)
+	form := utils.NewForm(r.PostForm)
+
+	form.Required("title", "url").Url("url").
+		MaxLength("title", 255).MaxLength("url", 255)
+
+	vars.Set("form", form)
+
+	if !form.Valid() {
+		vars.Set("errors", form.Errors)
+		err := a.Render(w, r, "submit", vars)
+		if err != nil {
+			a.serverError(w, err)
+		}
+		return
+	}
+
+	_, err = a.Models.Posts.Insert(form.Get("title"), form.Get("url"), userId)
+	if err != nil {
+		form.Fail("form", "failed due to "+err.Error())
+		vars.Set("errors", form.Errors)
+		err := a.Render(w, r, "submit", vars)
+		if err != nil {
+			a.serverError(w, err)
+		}
+		return
+	}
+
+	a.Session.Put(r.Context(), "flash", "post submitted successfully!")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}

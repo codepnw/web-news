@@ -9,6 +9,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/golang-module/carbon/v2 v2.2.13
 	github.com/joho/godotenv v1.5.1
+	github.com/justinas/nosurf v1.1.1
 	github.com/lib/pq v1.10.9
 	github.com/upper/db/v4 v4.7.0
 	golang.org/x/crypto v0.15.0
